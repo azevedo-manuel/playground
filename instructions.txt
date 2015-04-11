@@ -1,0 +1,13 @@
+*Configure phone personalization in CUCM
+*Add the phones to a CUCM end-user (for authentication to work)
+*Add two images (thumbnail and full background - see Cisco's docs for correct size of the model 
+ of your phone) to a web server. Make sure you can access these images with a web browser and that 
+ the phones can reach this web server
+*Configure the in the script:
+	- myuserid, mypassword 	Username and password of the auth user
+	- myphoneliststr 		IP addresses of the phones to be updated (coma separated)
+	- thumbnailurl 			The URL of the thumbnail
+	- backgroundurl			The URL of the background
+	- outputfile 			The name of the file to output debug data
+*When running the script, the output file will be generated and stored in the file defined by outputfile. 
+ When the string "--- *** FINISHED *** ---" appears at the end of the file, the script has finished execution.
