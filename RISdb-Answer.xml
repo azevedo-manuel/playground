@@ -1,0 +1,81 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <soapenv:Body>
+      <ns1:SelectCmDeviceResponse soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns1="http://schemas.cisco.com/ast/soap/">
+         <SelectCmDeviceResult xsi:type="ns1:SelectCmDeviceResult">
+            <TotalDevicesFound xsi:type="xsd:unsignedInt">2</TotalDevicesFound>
+            <CmNodes soapenc:arrayType="ns1:CmNode[1]" xsi:type="soapenc:Array" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">
+               <item xsi:type="ns1:CmNode">
+                  <ReturnCode xsi:type="ns1:RisReturnCode">Ok</ReturnCode>
+                  <Name xsi:type="xsd:string">10.1.1.70</Name>
+                  <NoChange xsi:type="xsd:boolean">false</NoChange>
+                  <CmDevices soapenc:arrayType="ns1:CmDevice[2]" xsi:type="soapenc:Array">
+                     <item xsi:type="ns1:CmDevice">
+                        <Name xsi:type="xsd:string">SEP9CAFCA84C169</Name>
+                        <IpAddress xsi:type="xsd:string">10.1.1.103</IpAddress>
+                        <DirNumber xsi:type="xsd:string">2000-Registered</DirNumber>
+                        <Class xsi:type="ns1:DeviceClass">Phone</Class>
+                        <Model xsi:type="xsd:unsignedInt">435</Model>
+                        <Product xsi:type="xsd:unsignedInt">334</Product>
+                        <BoxProduct xsi:type="xsd:unsignedInt">0</BoxProduct>
+                        <Httpd xsi:type="ns1:CmDevHttpd">Yes</Httpd>
+                        <RegistrationAttempts xsi:type="xsd:unsignedInt">13</RegistrationAttempts>
+                        <IsCtiControllable xsi:type="xsd:boolean">true</IsCtiControllable>
+                        <LoginUserId xsi:type="xsd:string" xsi:nil="true"/>
+                        <Status xsi:type="ns1:CmDevRegStat">Registered</Status>
+                        <StatusReason xsi:type="xsd:unsignedInt">0</StatusReason>
+                        <PerfMonObject xsi:type="xsd:unsignedInt">2</PerfMonObject>
+                        <DChannel xsi:type="xsd:unsignedInt">0</DChannel>
+                        <Description xsi:type="xsd:string">User 2000</Description>
+                        <H323Trunk xsi:type="ns1:H323Trunk">
+                           <ConfigName xsi:type="xsd:string" xsi:nil="true"/>
+                           <TechPrefix xsi:type="xsd:string" xsi:nil="true"/>
+                           <Zone xsi:type="xsd:string" xsi:nil="true"/>
+                           <RemoteCmServer1 xsi:type="xsd:string" xsi:nil="true"/>
+                           <RemoteCmServer2 xsi:type="xsd:string" xsi:nil="true"/>
+                           <RemoteCmServer3 xsi:type="xsd:string" xsi:nil="true"/>
+                           <AltGkList xsi:type="xsd:string" xsi:nil="true"/>
+                           <ActiveGk xsi:type="xsd:string" xsi:nil="true"/>
+                           <CallSignalAddr xsi:type="xsd:string" xsi:nil="true"/>
+                           <RasAddr xsi:type="xsd:string" xsi:nil="true"/>
+                        </H323Trunk>
+                        <TimeStamp xsi:type="xsd:unsignedInt">1429362843</TimeStamp>
+                     </item>
+                     <item xsi:type="ns1:CmDevice">
+                        <Name xsi:type="xsd:string">SEP9CAFCA84D025</Name>
+                        <IpAddress xsi:type="xsd:string">10.1.1.102</IpAddress>
+                        <DirNumber xsi:type="xsd:string">2001-Registered</DirNumber>
+                        <Class xsi:type="ns1:DeviceClass">Phone</Class>
+                        <Model xsi:type="xsd:unsignedInt">435</Model>
+                        <Product xsi:type="xsd:unsignedInt">334</Product>
+                        <BoxProduct xsi:type="xsd:unsignedInt">0</BoxProduct>
+                        <Httpd xsi:type="ns1:CmDevHttpd">Yes</Httpd>
+                        <RegistrationAttempts xsi:type="xsd:unsignedInt">11</RegistrationAttempts>
+                        <IsCtiControllable xsi:type="xsd:boolean">true</IsCtiControllable>
+                        <LoginUserId xsi:type="xsd:string" xsi:nil="true"/>
+                        <Status xsi:type="ns1:CmDevRegStat">Registered</Status>
+                        <StatusReason xsi:type="xsd:unsignedInt">0</StatusReason>
+                        <PerfMonObject xsi:type="xsd:unsignedInt">2</PerfMonObject>
+                        <DChannel xsi:type="xsd:unsignedInt">0</DChannel>
+                        <Description xsi:type="xsd:string">User 2001</Description>
+                        <H323Trunk xsi:type="ns1:H323Trunk">
+                           <ConfigName xsi:type="xsd:string" xsi:nil="true"/>
+                           <TechPrefix xsi:type="xsd:string" xsi:nil="true"/>
+                           <Zone xsi:type="xsd:string" xsi:nil="true"/>
+                           <RemoteCmServer1 xsi:type="xsd:string" xsi:nil="true"/>
+                           <RemoteCmServer2 xsi:type="xsd:string" xsi:nil="true"/>
+                           <RemoteCmServer3 xsi:type="xsd:string" xsi:nil="true"/>
+                           <AltGkList xsi:type="xsd:string" xsi:nil="true"/>
+                           <ActiveGk xsi:type="xsd:string" xsi:nil="true"/>
+                           <CallSignalAddr xsi:type="xsd:string" xsi:nil="true"/>
+                           <RasAddr xsi:type="xsd:string" xsi:nil="true"/>
+                        </H323Trunk>
+                        <TimeStamp xsi:type="xsd:unsignedInt">1429359029</TimeStamp>
+                     </item>
+                  </CmDevices>
+               </item>
+            </CmNodes>
+         </SelectCmDeviceResult>
+         <StateInfo xsi:type="xsd:string">&lt;StateInfo ClusterWide="1">&lt;Node Name="10.1.1.70" SubsystemStartTime="1429216822" StateId="104" TotalItemsFound="2" TotalItemsReturned="2"/>&lt;/StateInfo></StateInfo>
+      </ns1:SelectCmDeviceResponse>
+   </soapenv:Body>
+</soapenv:Envelope>
