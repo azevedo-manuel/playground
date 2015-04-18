@@ -1,9 +1,15 @@
+<?php
+
+$server  = "10.1.1.70";
+$AXLUser = "axluser";
+$AXLPwd  = "axlpassword";
+
 /*************************************
  * AXL Stuff to get all devices in DB
  *************************************/
 
 // Create SOAP Connection
-$soap_axl = new SoapClient(__DIR__ . '/../schema/8.0/AXLAPI.wsdl',
+$soap_axl = new SoapClient('./axlsqltoolkit/schema/current/AXLAPI.wsdl',
 array(
 	"trace"=>true,
 	"exceptions"=>true,
@@ -21,6 +27,9 @@ $devices = $response->return->row;
 $devices_chunks = array_chunk($devices,200);
 
 $total_DB = count($devices);
+
+print_r($devices);
+
 echo "Total Devices found in DB: " . count($devices) . "\n";
 echo "You will need " . count($devices_chunks) . " dots\n";
 
@@ -29,7 +38,7 @@ echo "You will need " . count($devices_chunks) . " dots\n";
  *******************************************/
 
 // Create SOAP Connection
-$soap_ris = new SoapClient("../schema/RisPort.wsdl",
+$soap_ris = new SoapClient("./risdb/RisPort.wsdl",
 	array(
 		"trace"=>true,
 		"exceptions"=>true,
@@ -45,8 +54,6 @@ foreach ($devices_chunks as $chunk){
 	//Prepare RisPort request
 	$array["SelectBy"] = "Name";
 	$array["Status"] = "Registered";
-	//$array["Class"] = "Phone";
-	//$array["MaxReturnedDevices"] = "1000";
 	$i = 1;
 	foreach($chunk as $device){
 		$array["SelectItems"]["SelectItem[$i]"]["Item"] = $device->name;
@@ -56,3 +63,7 @@ foreach ($devices_chunks as $chunk){
 	// Run RisPost Query + wait a bit as max requests is 15 per min.
 	$response = $soap_ris->SelectCmDevice("",$array);
 	sleep(5);
+}
+
+print_r ($response);
+?>

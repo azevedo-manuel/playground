@@ -3,7 +3,7 @@
 
 use warnings;
 use strict;
-use SOAP::Lite;#  +trace => 'debug';
+use SOAP::Lite  +trace => 'debug';
 
 my $cucmip     = "10.1.1.70";
 my $axl_port   = "8443";
