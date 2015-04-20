@@ -1,21 +1,26 @@
 #!/usr/bin/env perl
 #
 
-use warnings;
+#use warnings;
 use strict;
 use SOAP::Lite;#+trace => 'debug';
 use Data::Dump qw(dump);
+use LWP::UserAgent;
+use Net::Ping;
+use XML::Simple;
 
-my $cucmip        = "10.1.1.70";
-my $axlport       = "8443";
-my $user          = "axluser";
-my $password      = "axlpassword";
-my $axltoolkit    = "AXLAPI.wsdl";
-my $ristoolkit    = "file:./risdb/RisPort.wsdl";
-my $ver           = "8.5";
-my $AXLnamespace  = "http://www.cisco.com/AXL/API/$ver";
-my $RISnamespace  = "http://schemas.cisco.com/ast/soap/";
-my $RISmaxPhones  = 4;
+my $cucmip               = "10.1.1.70";
+my $axlport              = "8443";
+my $user                 = "axluser";
+my $password             = "axlpassword";
+my $axltoolkit           = "AXLAPI.wsdl";
+my $ristoolkit           = "file:./risdb/RisPort.wsdl";
+my $ver                  = "8.5";
+my $AXLnamespace         = "http://www.cisco.com/AXL/API/$ver";
+my $RISnamespace         = "http://schemas.cisco.com/ast/soap/";
+my $RISmaxPhones         = 200;
+my $PhoneNamePattern     = "SEP%";
+my $delayBetweenRequests = 1;
 
 # Disable in case it complains about the certificate! Remember to put as a parameter
 $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}=0;
@@ -30,6 +35,8 @@ BEGIN {
 
 # Create an AXL request 
 
+print "** Querying AXL database for all phones starting with \'$PhoneNamePattern\'\n";
+
 my $cm = new SOAP::Lite
          encodingStyle => '',
 	 on_action     => (sub {return "CUCM:DB ver=$ver"}),
@@ -38,7 +45,7 @@ my $cm = new SOAP::Lite
 
 # Build the request
 
-my $res = $cm->listPhone(SOAP::Data->name("searchCriteria" => \SOAP::Data->value(SOAP::Data->name("name"        => "SEP%")),
+my $res = $cm->listPhone(SOAP::Data->name("searchCriteria" => \SOAP::Data->value(SOAP::Data->name("name"        => $PhoneNamePattern)),
 	                 SOAP::Data->name("returnedTags"   => \SOAP::Data->value(SOAP::Data->name("name"        => "?"),
 			                                                         SOAP::Data->name("description" => "?"),
 				                                                 SOAP::Data->name("product"     => "?"),
@@ -50,11 +57,13 @@ my $res = $cm->listPhone(SOAP::Data->name("searchCriteria" => \SOAP::Data->value
                         )
 );
 
+sleep ($delayBetweenRequests);
+
 my $totalPhones;
 my @phones;
 unless ($res->fault) {
 	@phones = $res->valueof('//listPhoneResponse/return/phone');
-	print "Total number of found phones: ".($totalPhones=scalar(@phones))."\n";
+	print "Total number of configured phones found: ".($totalPhones=scalar(@phones))."\n\n";
 	foreach (@phones){
 		print $_->{name}." : ";
 		print $_->{product}." : ";
@@ -62,14 +71,15 @@ unless ($res->fault) {
 		print $_->{protocol}." \n";
 	} 
 } else {
-
+        print "Code   : ".$res->faultcode."\n";
+	print "Message: ".$res->faultstring." \n";
 }
 
-my $numberChunks = int($totalPhones / $RISmaxPhones);
-
-print "Total number of chunks is $numberChunks\n";
+print "\n\n";
 
 # Query risDB about the phones
+
+print "** Querying RISDB for registered phones \n";
 
 $cm = new SOAP::Lite
          encodingStyle => '',
@@ -82,16 +92,19 @@ $cm = new SOAP::Lite
 my @chunks;
 push @chunks, [splice @phones,0,$RISmaxPhones] while @phones;
 
-print " &&& Phones into chunks &&& \n";
 
 # Build request
 
-print "Created chunks: ".scalar(@chunks)."\n\n";
+my $numberChunks = scalar(@chunks);
+print "Created $numberChunks chunk(s) with a maximum of $RISmaxPhones phones (each).\n\n";
 my $i=1;
 my @phoneList;
 my @IPphoneList;
+my @RegisteredPhones;
+
 for my $chunk (@chunks) {
-	print "===== CHUNK: $i ====\n\n";
+	print "=> Getting chunk: $i ====>\n";
+	@phoneList = ();
 	for my $phone (@$chunk) {
 		push @phoneList, $phone->{name};
 	}
@@ -109,19 +122,50 @@ for my $chunk (@chunks) {
 				                                                                   )
 				                      )
 			             );
-	$i++;
 	unless ($res->fault){
-		my @resNode =$res->valueof('//SelectCmDeviceResponse/SelectCmDeviceResult/CmNodes/item');
-#		dump (@resNode);
-#		exit 0;
-		foreach (@resNode['CmDevices']) {
-			#if (ref($_) eq "HASH") { push @IPphoneList,@$_ };
-			dump($_);
+		my @resNode =$res->valueof('//SelectCmDeviceResponse/SelectCmDeviceResult/CmNodes/item/CmDevices/item');
+		foreach (@resNode) {
+			push @RegisteredPhones, $_->{IpAddress};
+			printf "%-15s : %-30s : %-15s : %-30s : %-10s : %d : %d : %-10s \n", $_->{Name},
+											     $_->{Description}, 
+											     $_->{IpAddress},
+											     $_->{DirNumber},
+											     $_->{Class},
+											     $_->{Model},
+											     $_->{Product},
+											     $_->{Status};
 		}
 	} else {
         	print "Code   : ".$res->faultcode."\n";
 	        print "Message: ".$res->faultstring." \n";	
 	}
+	$i++;
+	sleep ($delayBetweenRequests);
 }
 
-dump(@IPphoneList);
+
+print "\n\n";
+print "** Checking if phone is alive and get XML data from phone\n";
+
+foreach (@RegisteredPhones){
+	my $ping = Net::Ping->new();
+	if ($ping->ping($_,2)) {
+		print "$_ pingable. ";
+		my $ua = LWP::UserAgent->new;
+		my $response = $ua->get("http://$_/DeviceInformationX");
+		if ($response->is_success) {
+			my $xml = new XML::Simple;
+                        my $phoneData = $xml->XMLin($response->decoded_content);
+			printf " %-12s : %-15s : %-15s : %-20s : %-15s : %-20s \n", $phoneData->{MACAddress},
+											    $phoneData->{HostName},
+											    $phoneData->{phoneDN},
+											    $phoneData->{versionID},
+											    $phoneData->{serialNumber},
+											    $phoneData->{modelNumber};
+		} else {
+			print "Could not be reached through HTTP: $response->status_line\n";
+		}
+	} else {
+		print "Phone $_ could not be pinged\n";
+	}
+}
