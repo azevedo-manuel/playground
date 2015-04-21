@@ -38,23 +38,23 @@ BEGIN {
 print "** Querying AXL database for all phones starting with \'$PhoneNamePattern\'\n";
 
 my $cm = new SOAP::Lite
-         encodingStyle => '',
-	 on_action     => (sub {return "CUCM:DB ver=$ver"}),
-	 proxy         => "https://$cucmip:$axlport/axl/",
-	 ns            => $AXLnamespace;
+	encodingStyle => '',
+	on_action     => (sub {return "CUCM:DB ver=$ver"}),
+	proxy         => "https://$cucmip:$axlport/axl/",
+	ns            => $AXLnamespace;
 
 # Build the request
 
-my $res = $cm->listPhone(SOAP::Data->name("searchCriteria" => \SOAP::Data->value(SOAP::Data->name("name"        => $PhoneNamePattern)),
-	                 SOAP::Data->name("returnedTags"   => \SOAP::Data->value(SOAP::Data->name("name"        => "?"),
-			                                                         SOAP::Data->name("description" => "?"),
-				                                                 SOAP::Data->name("product"     => "?"),
-				                                                 SOAP::Data->name("model"       => "?"),
-				                                                 SOAP::Data->name("class"       => "?"),
-				                                                 SOAP::Data->name("protocol"    => "?")
-			                                      )
-                        )
-                        )
+my $res = $cm->listPhone(SOAP::Data->name("searchCriteria" => \SOAP::Data->value(SOAP::Data->name("name"         => $PhoneNamePattern)),
+										 SOAP::Data->name("returnedTags" => \SOAP::Data->value( SOAP::Data->name("name"        => "?"),
+																 	SOAP::Data->name("description" => "?"),
+																	SOAP::Data->name("product"     => "?"),
+																	SOAP::Data->name("model"       => "?"),
+																	SOAP::Data->name("class"       => "?"),
+																	SOAP::Data->name("protocol"    => "?")
+																	)
+												 )
+					)
 );
 
 sleep ($delayBetweenRequests);
@@ -69,9 +69,9 @@ unless ($res->fault) {
 		print $_->{product}." : ";
 		print $_->{class}." : ";
 		print $_->{protocol}." \n";
-	} 
+	}
 } else {
-        print "Code   : ".$res->faultcode."\n";
+	print "Code   : ".$res->faultcode."\n";
 	print "Message: ".$res->faultstring." \n";
 }
 
@@ -82,11 +82,11 @@ print "\n\n";
 print "** Querying RISDB for registered phones \n";
 
 $cm = new SOAP::Lite
-         encodingStyle => '',
-	 on_action     => (sub {return "CUCM:DB ver=$ver"}),
-	 proxy         => "https://$cucmip:$axlport/realtimeservice/services/RisPort",
-	 service       => $ristoolkit, 
-	 ns            => $RISnamespace;
+	encodingStyle => '',
+	on_action     => (sub {return "CUCM:DB ver=$ver"}),
+	proxy         => "https://$cucmip:$axlport/realtimeservice/services/RisPort",
+	service       => $ristoolkit,
+	ns            => $RISnamespace;
 
 
 my @chunks;
@@ -112,22 +112,22 @@ for my $chunk (@chunks) {
 	my $sel;
 	foreach (@phoneList){
 		$sel = SOAP::Data->name("SelectItem" => \SOAP::Data->value(SOAP::Data->name("Item" => "$_")));
-		push (@selection, $sel)
+		push (@selection, $sel);
 	}
 	
 
 	my $res = $cm->SelectCmDevice(SOAP::Data->name("CmSelectionCriteria" => \SOAP::Data->value(SOAP::Data->name("Status"      => "Registered"),
-	                                                                                           SOAP::Data->name("SelectBy"    => "Name"),
-				                                                                   SOAP::Data->name("SelectItems" => \@selection), 
-				                                                                   )
-				                      )
-			             );
+												   SOAP::Data->name("SelectBy"    => "Name"),
+												   SOAP::Data->name("SelectItems" => \@selection),
+												  )
+						      )
+	);
 	unless ($res->fault){
 		my @resNode =$res->valueof('//SelectCmDeviceResponse/SelectCmDeviceResult/CmNodes/item/CmDevices/item');
 		foreach (@resNode) {
 			push @RegisteredPhones, $_->{IpAddress};
 			printf "%-15s : %-30s : %-15s : %-30s : %-10s : %d : %d : %-10s \n", $_->{Name},
-											     $_->{Description}, 
+											     $_->{Description},
 											     $_->{IpAddress},
 											     $_->{DirNumber},
 											     $_->{Class},
@@ -136,8 +136,8 @@ for my $chunk (@chunks) {
 											     $_->{Status};
 		}
 	} else {
-        	print "Code   : ".$res->faultcode."\n";
-	        print "Message: ".$res->faultstring." \n";	
+		print "Code   : ".$res->faultcode."\n";
+		print "Message: ".$res->faultstring." \n";
 	}
 	$i++;
 	sleep ($delayBetweenRequests);
@@ -148,24 +148,18 @@ print "\n\n";
 print "** Checking if phone is alive and get XML data from phone\n";
 
 foreach (@RegisteredPhones){
-	my $ping = Net::Ping->new();
-	if ($ping->ping($_,2)) {
-		print "$_ pingable. ";
-		my $ua = LWP::UserAgent->new;
-		my $response = $ua->get("http://$_/DeviceInformationX");
-		if ($response->is_success) {
-			my $xml = new XML::Simple;
-                        my $phoneData = $xml->XMLin($response->decoded_content);
-			printf " %-12s : %-15s : %-15s : %-20s : %-15s : %-20s \n", $phoneData->{MACAddress},
-											    $phoneData->{HostName},
-											    $phoneData->{phoneDN},
-											    $phoneData->{versionID},
-											    $phoneData->{serialNumber},
-											    $phoneData->{modelNumber};
-		} else {
-			print "Could not be reached through HTTP: $response->status_line\n";
-		}
+	my $ua = LWP::UserAgent->new;
+	my $response = $ua->get("http://$_/DeviceInformationX");
+	if ($response->is_success) {
+		my $xml = new XML::Simple;
+		my $phoneData = $xml->XMLin($response->decoded_content);
+		printf " %-12s : %-15s : %-15s : %-20s : %-15s : %-20s \n", $phoneData->{MACAddress},
+									    $phoneData->{HostName},
+									    $phoneData->{phoneDN},
+									    $phoneData->{versionID},
+									    $phoneData->{serialNumber},
+									    $phoneData->{modelNumber};
 	} else {
-		print "Phone $_ could not be pinged\n";
+		print "Could not be reached through HTTP: $response->status_line\n";
 	}
 }
