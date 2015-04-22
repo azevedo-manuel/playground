@@ -9,10 +9,20 @@ use LWP::UserAgent;
 use Net::Ping;
 use XML::Simple;
 
-my $cucmip               = "10.1.1.70";
+#my $cucmip               = "10.1.1.70";
+#my $axlport              = "8443";
+#my $user                 = "axluser";
+#my $password             = "axlpassword";
+
+
+my $cucmip               = "10.101.28.21";
 my $axlport              = "8443";
-my $user                 = "axluser";
-my $password             = "axlpassword";
+my $user                 = "administrator";
+my $password             = "M100idK";
+
+
+
+
 my $axltoolkit           = "AXLAPI.wsdl";
 my $ristoolkit           = "file:./risdb/RisPort.wsdl";
 my $ver                  = "8.5";
@@ -149,6 +159,7 @@ print "** Checking if phone is alive and get XML data from phone\n";
 
 foreach (@RegisteredPhones){
 	my $ua = LWP::UserAgent->new;
+	$ua->timeout(5);
 	my $response = $ua->get("http://$_/DeviceInformationX");
 	if ($response->is_success) {
 		my $xml = new XML::Simple;
@@ -160,6 +171,6 @@ foreach (@RegisteredPhones){
 									    $phoneData->{serialNumber},
 									    $phoneData->{modelNumber};
 	} else {
-		print "Could not be reached through HTTP: $response->status_line\n";
+		print "Phone at $_ could not be reached through HTTP: $response->status_line\n";
 	}
 }
