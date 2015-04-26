@@ -9,16 +9,16 @@ use LWP::UserAgent;
 use Net::Ping;
 use XML::Simple;
 
-#my $cucmip               = "10.1.1.70";
-#my $axlport              = "8443";
-#my $user                 = "axluser";
-#my $password             = "axlpassword";
-
-
-my $cucmip               = "10.101.28.21";
+my $cucmip               = "10.1.1.70";
 my $axlport              = "8443";
-my $user                 = "administrator";
-my $password             = "M100idK";
+my $user                 = "axluser";
+my $password             = "axlpassword";
+
+
+#my $cucmip               = "10.101.28.21";
+#my $axlport              = "8443";
+#my $user                 = "administrator";
+#my $password             = "M100idK";
 
 
 

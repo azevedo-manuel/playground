@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+#
+
+use strict;
+require LWP::UserAgent;
+use LWP::Debug qw(+);
+
+my $bkgURL = "http://10.1.1.70:6970/Desktops/320x212x16/7965-gruyeres-chateau.png";
+my $bkgThn = "http://10.1.1.70:6970/Desktops/320x212x16/7965-gruyeres-chateau-tn.png";
+my $phoneIP = "10.1.1.103";
+
+
+my $setBkgXML = "<setBackground><background><image>$bkgURL</image><icon>$bkgThn</icon></background></setBackground>";
+my $phoneWeb  = "http://$phoneIP/CGI/Execute";
+
+my $ua      = LWP::UserAgent->new;
+my $post    = $ua->post($phoneWeb, { 'XML' => $setBkgXML} );
+my $content = $post->decoded_content();
+
+print "$content\n\n";
+
