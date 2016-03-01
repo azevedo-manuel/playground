@@ -9,16 +9,16 @@ use LWP::UserAgent;
 use Net::Ping;
 use XML::Simple;
 
-my $cucmip               = "10.1.1.70";
+#my $cucmip               = "10.1.1.70";
+#my $axlport              = "8443";
+#my $user                 = "axluser";
+#my $password             = "axlpassword";
+
+
+my $cucmip               = "172.26.46.10";
 my $axlport              = "8443";
 my $user                 = "axluser";
 my $password             = "axlpassword";
-
-
-#my $cucmip               = "10.101.28.21";
-#my $axlport              = "8443";
-#my $user                 = "administrator";
-#my $password             = "M100idK";
 
 
 
@@ -28,7 +28,7 @@ my $ristoolkit           = "file:./risdb/RisPort.wsdl";
 my $ver                  = "8.5";
 my $AXLnamespace         = "http://www.cisco.com/AXL/API/$ver";
 my $RISnamespace         = "http://schemas.cisco.com/ast/soap/";
-my $RISmaxPhones         = 200;
+my $RISmaxPhones         = 10;
 my $PhoneNamePattern     = "SEP%";
 my $delayBetweenRequests = 1;
 
@@ -53,6 +53,11 @@ my $cm = new SOAP::Lite
 	proxy         => "https://$cucmip:$axlport/axl/",
 	ns            => $AXLnamespace;
 
+    $cm->transport->ssl_opts(
+        SSL_verify_mode => 0, 
+        verify_hostname => 0
+    );
+    
 # Build the request
 
 my $res = $cm->listPhone(SOAP::Data->name("searchCriteria" => \SOAP::Data->value(SOAP::Data->name("name"         => $PhoneNamePattern)),
